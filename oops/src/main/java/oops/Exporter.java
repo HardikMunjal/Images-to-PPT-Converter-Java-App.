@@ -2,16 +2,20 @@ package oops;
 
 
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
+import javax.swing.text.Element;
 
+import org.apache.poi.ss.usermodel.Picture;
 import org.apache.poi.util.IOUtils;
 import org.apache.poi.xslf.usermodel.SlideLayout;
 import org.apache.poi.xslf.usermodel.XMLSlideShow;
@@ -29,19 +33,42 @@ import org.apache.poi.xslf.usermodel.XSLFTextShape;
 public class Exporter {
 	
 	
+	
+	
+	
+	private BufferedImage cropImage(BufferedImage src, Rectangle rect) {
+	      BufferedImage dest = src.getSubimage(0, 0, rect.width, rect.height);
+	      return dest; 
+	   }
+	
+	
+	
+	
+	
+	
+	
+		
+	
+	@SuppressWarnings("deprecation")
 	public static void main(String args[]) throws IOException{
 	   
+		
 		
 	   int ppt2013Width=1368;
 	   int ppt2013Height=768;
 	   int pageWidth=1000;
 	   int pageHeight=850;
+	   int TitleArea=0;
+	   int ExtendedWidth=1054;
+	   int ExtendedWidthHeightLessThanWidth=994;
+	   
+	   
 	   String sourceFolder = "G://dinesh//Source Images";
        XMLSlideShow ppt = new XMLSlideShow();
     
        File image2=new File("G://dinesh//Images//Right.jpg");
        
-       File image3=new File("G://dinesh//Images//Left.jpg");
+       File image3=new File("G://dinesh//Images//left3.jpg");
        
        File image4=new File("G://dinesh//Source Images//15.Legend1 (legend).png");
        File image5=new File("G://dinesh//Source Images//16.Legend2 (legend).png");
@@ -55,13 +82,15 @@ public class Exporter {
        byte[] picture4=IOUtils.toByteArray(new FileInputStream(image4));
        byte[] picture5=IOUtils.toByteArray(new FileInputStream(image5));
        
+       
+       
        //adding the image to the presentation
     
        int idx1 = ppt.addPicture(picture2, XSLFPictureData.PICTURE_TYPE_PNG);
        
        int idx2 = ppt.addPicture(picture3, XSLFPictureData.PICTURE_TYPE_PNG);
-       int idx3 = ppt.addPicture(picture4, XSLFPictureData.PICTURE_TYPE_PNG);
-       int idx4 = ppt.addPicture(picture5, XSLFPictureData.PICTURE_TYPE_PNG);
+      // int idx3 = ppt.addPicture(picture4, XSLFPictureData.PICTURE_TYPE_PNG);
+      // int idx4 = ppt.addPicture(picture5, XSLFPictureData.PICTURE_TYPE_PNG);
        
        //creating a slide with given picture on it
     
@@ -75,8 +104,16 @@ public class Exporter {
            if(image.isFile() && image.getName().endsWith("png")&&(image.getName().indexOf("Legend")==-1)) {
         	           	   BufferedImage img = null;
 
+        	           	   
                try {
                    img = ImageIO.read(image);
+                   
+                   int width=img.getWidth();
+                   int height=img.getHeight();
+                   
+                   BufferedImage img1=img.getSubimage(20, 0, 1000, 500);
+                   
+                   
                    
                    XSLFSlideMaster slideMaster = ppt.getSlideMasters()[0];
                    
@@ -85,12 +122,12 @@ public class Exporter {
                    //   titleLayout.createAutoShape();
                   
                    
-               XSLFSlide slide = ppt.createSlide(titleLayout);
+               XSLFSlide slide = ppt.createSlide();
                
                slide.setFollowMasterGraphics(true);
                //slide.setBackground(new java.awt.Color(0,0,255));
                
-               XSLFTextShape title1 = slide.getPlaceholder(0);
+              // XSLFTextShape title1 = slide.getPlaceholder(0);
                // XSLFTextShape body = slide.getPlaceholder(1);
                
                //clear the existing text in the slide
@@ -106,8 +143,7 @@ public class Exporter {
                // body.clearText();
                
                
-               int width=img.getWidth();
-               int height=img.getHeight();
+               
                // int type=img.getType();
                
              
@@ -137,6 +173,8 @@ public class Exporter {
                
                //setting the title init 
                java.awt.Dimension pgsize = ppt.getPageSize();
+               
+               
                int pgw = pgsize.width; //slide width in points
                int pgh = pgsize.height; //slide height in points
                System.out.println("current page size of the PPT is:");
@@ -151,19 +189,41 @@ public class Exporter {
 				}
                a = a.substring(a.indexOf('.')+1);
                
-               title1.setText(a.replaceAll("[(1-9)]+","" ));
+             /*  title1.setText(a.replaceAll("[(1-9)]+","" ));
                title1.setAnchor(new java.awt.Rectangle(251,45,700,15));
                title1.setFillColor(java.awt.Color.green);
                title1.setWordWrap(true);
+               */
+               
                //XSLFTextParagraph paragraph=title1.addNewTextParagraph();
                //XSLFTextRun run = paragraph.addNewTextRun();
                //run.setFontColor(java.awt.Color.red);
               // run.setFontSize(24);
-                byte[] picture = IOUtils.toByteArray(new FileInputStream(image));
+       //         byte[] picture = IOUtils.toByteArray(new FileInputStream(image));
+               
+               // BufferedImage dest = src.getSubimage(0, 0, rect.width, rect.height);
+                
+               
+                
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                ImageIO.write(img1, "png", baos);
+                
+                
+                byte[] picture = baos.toByteArray();
                 
                 int idx = ppt.addPicture(picture, XSLFPictureData.PICTURE_TYPE_PNG);
                 
                 XSLFPictureShape pic = slide.createPicture(idx);
+                //pic.resize();
+               // pic.setLineColor(java.awt.Color.red);
+               // pic.getDyaCropTop();
+               // pic.getDxaGoal();
+                
+                //pic.setAnchor(anchor);
+                //pic.setFlipHorizontal(flip);
+                
+                
+                pic.getFillColor();
                 
                 
                 XSLFPictureShape pic2 = slide.createPicture(idx1);
@@ -182,7 +242,8 @@ public class Exporter {
            	//	XSLFPictureShape pic5 = slide.createPicture(idx4);
            	 //   pic5.setAnchor(new java.awt.Rectangle(300,628,300,140));
            	 //}
-                if(image.getName().contains("map"))
+                
+             /*   if(image.getName().contains("map"))
 					if(image.getName().contains("Timeliness")){
 						XSLFPictureShape pic4 = slide.createPicture(idx3);
 						pic4.setAnchor(new java.awt.Rectangle(190,500,250,140));
@@ -190,7 +251,8 @@ public class Exporter {
 						XSLFPictureShape pic5 = slide.createPicture(idx4);
 						pic5.setAnchor(new java.awt.Rectangle(190,500,250,140));
 					}
-				
+				*/
+                
            	 
            	 
            	 if (height>(ppt2013Height-150))
@@ -198,24 +260,30 @@ public class Exporter {
            	 {
            		 if(height>width)
            		 {
+           			 /*if(width>1026)
+           			 {
+           				 ExtendedWidth=1000;
+           			 }*/
+           			 
            			 
            			 int heightChanged=height+100;
-               		 if (heightChanged<668)
+               		 if (heightChanged<(ppt2013Height-TitleArea))
                		 {
            			 
-           			pic.setAnchor(new java.awt.Rectangle((((ppt2013Width-ppt2013Width/8)-654)/2),100,654,heightChanged));
+           			//pic.setAnchor(new java.awt.Rectangle((((ppt2013Width-ppt2013Width/8)-ExtendedWidth)/2),TitleArea,ExtendedWidth,heightChanged));
+           			pic.setAnchor(new java.awt.Rectangle((((ppt2013Width-ppt2013Width/8)-ExtendedWidth)/2),TitleArea,ExtendedWidth,heightChanged));
                		 }
                		 else{
-               			pic.setAnchor(new java.awt.Rectangle((((ppt2013Width-ppt2013Width/8)-654)/2),100,654,668));
+               			pic.setAnchor(new java.awt.Rectangle((((ppt2013Width-ppt2013Width/8)-ExtendedWidth)/2),TitleArea,ExtendedWidth,(ppt2013Height-TitleArea)));
                		 }
            			
            			
            			
            			
-           			
+               		
            		 }
            		 else{
-                pic.setAnchor(new java.awt.Rectangle((((ppt2013Width-ppt2013Width/8)-704)/2),100,704,508));
+                pic.setAnchor(new java.awt.Rectangle((((ppt2013Width-ppt2013Width/8)-ExtendedWidthHeightLessThanWidth)/2),TitleArea,ExtendedWidthHeightLessThanWidth,508));
            	 }}
            	// else if(width<500||height<400)
            	 //{
@@ -231,19 +299,20 @@ public class Exporter {
            	 else
            	 {
            		 int heightChanged=height+100;
-           		 if (heightChanged<618)
+           		 if (heightChanged<(ppt2013Height-150))
            		 {
-           		 pic.setAnchor(new java.awt.Rectangle((((ppt2013Width-ppt2013Width/8)-width)/2),100,width+100,heightChanged)); 
+           		 pic.setAnchor(new java.awt.Rectangle((((ppt2013Width-ppt2013Width/16)-ExtendedWidth)/2),TitleArea,ExtendedWidth,heightChanged+100)); 
            		 }
-           		 else{
-           			 pic.setAnchor(new java.awt.Rectangle((((ppt2013Width-ppt2013Width/8)-width)/2),100,width+100,height)); 
+           		 else
+           		 {
+           			 pic.setAnchor(new java.awt.Rectangle((((ppt2013Width-ppt2013Width/16)-ExtendedWidth)/2),TitleArea,ExtendedWidth,height+100)); 
                 		
            		 }	 
            	 }
            	 
                 pic2.setAnchor(new java.awt.Rectangle((ppt2013Width-ppt2013Width/8),0,(ppt2013Width/8),ppt2013Height));
                 
-                pic3.setAnchor(new java.awt.Rectangle(0,0,(ppt2013Width/8),ppt2013Height));
+                pic3.setAnchor(new java.awt.Rectangle(0,0,(ppt2013Width/16),ppt2013Height));
                 
               
                 
